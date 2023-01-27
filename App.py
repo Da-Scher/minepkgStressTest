@@ -1,8 +1,13 @@
 #
 
-import re, urllib.request, json, subprocess
+import re, urllib.request, json, subprocess, sys
 
 from threading import Timer
+
+VERSION = 0.2
+
+
+    
 
 # global(s)
 versionlist = []
@@ -11,7 +16,7 @@ kill = lambda process: process.terminate()
 
 
 
-def run_process(version):
+def run_process(output_file, version):
     state = False
     cmd = 'minepkg launch vanilla --minecraft=' + version
     proc = subprocess.Popen(cmd,
@@ -28,27 +33,37 @@ def run_process(version):
                 timer.cancel()
                 Timer(5, kill, [ proc ]).start()
                 state = True
+            if '[Sound Library Loader/INFO]: Sound engine started' in line and state == False:
+                timer.cancel()
+                Timer(5, kill, [ proc ]).start()
+                state = True
+            if '[Client thread/INFO]: Created: 256x128 textures/mob_effect-atlas' in line and state == False:
+                timer.cancel()
+                Timer(5, kill, [ proc ]).start()
+                state = True
         except subprocess.CalledProcessError as e:
-            print('EXCEPTION:subprocess.CalledProcessError:' + e)
-            return False
+            print('EXCEPTION FROM minepkgStressTest::subprocess.CalledProcessError:' + e)
+            output_file.write(version + " FAIL")
+            timer.cancel()
+            return
         except subprocess.SubprocessError as e:
-            print('EXCEPTION:subprocess.SubprocessError' + e)
-            return False
+            print('EXCEPTION FROM minepkgStressTest::subprocess.SubprocessError' + e)
+            output_file.write(version + " FAIL")
+            timer.cancel()
+            return
     
     if proc.poll() == 0:
-        return True
+        output_file.write(version + " PASS")
+        return
     
     if proc.poll() != 0:
         if proc.returncode == -15:
-            return True
+            output_file.write(version + " PASS")
+            return
         else:
+            output_file.write(version + " FAIL")
             print('unknown returncode: ' + str(proc.returncode))
-            return False
-        
-    print('hello?')
-    
-    # assume failure
-    return False
+            return
 
 
 print('anything?')
@@ -59,7 +74,6 @@ with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_man
     version_id = json.loads(versions)
     for idx in range(0, len(version_id)):
         versionlist.append(version_id[idx]['id'])
-    print('got our version list')
 
 # 2. populate output file with test.
 with open('output', 'w') as output_file:
@@ -73,9 +87,4 @@ with open('output', 'w') as output_file:
                 elif re.match('^\d+.\d+$', version):
                     version = re.sub('$', '.0', version)
         # now that we have an appropriate version we can construct a minepkg command
-        if run_process(version) == True:
-            output_file.write( version + ' PASS\n' )
-        else:
-            output_file.write( version + ' FAIL\n' )
-
-# 3. close file and stop.
+        run_process(output_file, version)
