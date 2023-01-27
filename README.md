@@ -1,0 +1,1 @@
+This is a stress test for minepkg to test against every version of minecraft
