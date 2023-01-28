@@ -2,14 +2,19 @@
 #       This script test runs every version of minecraft using minepkg 
 #
 
-import re, urllib.request, json, subprocess
-
-from threading import Timer
+import re, urllib.request, json, sys
 
 import testThread
 
 # global(s)
+# the version list needs to be known everywhere
 versionlist = []
+
+# "constant(s)"
+# number of threads to use
+THREADCOUNT = 1
+
+
 
 # 1. get the version list from the json.
 with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_manifest.json") as url:
@@ -22,8 +27,7 @@ with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_man
 # 2. populate output file with test.
 with open('output', 'w') as output_file:
     process = False
-    idx = 8
-    THREADCOUNT = 2
+    idx = 0
     while idx < len(versionlist):
         threads = []
         # fixing mojang versioning to match with minepkg stanards
