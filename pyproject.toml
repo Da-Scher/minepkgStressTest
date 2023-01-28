@@ -1,0 +1,7 @@
+[tool.minepkgStressTest]
+name="minepkgStressTest"
+version="0.3.0"
+description="stress test all possible versions of minecraft using minepkg"
+authors=["Dakota Schaeffer"]
+license="MIT"
+readme="README.md"
