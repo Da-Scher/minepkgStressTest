@@ -10,10 +10,11 @@ class testThread(Thread):
         
         Thread.__init__(self)
         
-        self.state = None
+        self.state = False
         self.vers = version
         
     def run(self):
+        print(self.vers)
         cmd = 'minepkg launch vanilla --minecraft=' + str(self.vers)
         proc = subprocess.Popen(cmd,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -30,32 +31,37 @@ class testThread(Thread):
                     timer.cancel()
                     Timer(5, kill, [ proc ]).start()
                     shortcut = True
-                    self.state = f'{str(self.vers)} {str("PASS")}\n'
+                    self.state = True
                 if '[Sound Library Loader/INFO]: Sound engine started' in line and shortcut == False:
                     timer.cancel()
                     Timer(5, kill, [ proc ]).start()
                     shortcut = True
-                    self.state = f'{str(self.vers)} {str("PASS")}\n'
+                    self.state = True
                 if '[Client thread/INFO]: Created: 256x128 textures/mob_effect-atlas' in line and shortcut == False:
                     timer.cancel()
                     Timer(5, kill, [ proc ]).start()
                     shortcut = True
-                    self.state = f'{str(self.vers)} {str("PASS")}\n'
+                    self.state = False
+                if '[CLIENT] [INFO] Found animation info for: textures/items/compass.txt' in line and shortcut == False:
+                    timer.cancel()
+                    Timer(5, kill, [ proc ]).start()
+                    shortcut = True
+                    self.state = False
             except subprocess.CalledProcessError as e:
                 print('EXCEPTION FROM minepkgStressTest::subprocess.CalledProcessError:' + e)
                 timer.cancel()
-                self.state = f'{str(self.vers)} {str("FAIL")}\n'
+                self.state = False
             except subprocess.SubprocessError as e:
                 print('EXCEPTION FROM minepkgStressTest::subprocess.SubprocessError' + e)
                 timer.cancel()
-                self.state = f'{str(self.vers)} {str("FAIL")}\n'
+                self.state = False
 
         if proc.poll() == 0:
-            self.state = f'{str(self.vers)} {str("PASS")}\n'
+            self.state = True
 
         if proc.poll() != 0:
             if proc.returncode == -15:
-                self.state = f'{str(self.vers)} {str("PASS")}\n'
+                self.state = True
             else:
                 print('unknown returncode: ' + str(proc.returncode))
-                self.state = f'{str(self.vers)} {str("FAIL")}\n'
+                self.state = False
