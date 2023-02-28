@@ -1,2 +1,3 @@
 output
-src/minepkgStressTest/__pycache__/testThread.cpython-310.pyc
+src/minepkgStressTest/__pycache__
+src/minepkgStressTest/__pycache__/*
