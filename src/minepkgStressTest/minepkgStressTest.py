@@ -2,9 +2,38 @@
 #       This script test runs every version of minecraft using minepkg 
 #
 
-import re, urllib.request, json, sys, math
+import re, urllib.request, json, argparse
 
 import testThread
+
+
+
+# CL arguments
+parser = argparse.ArgumentParser(
+    prog        = 'mpkgStressTest',
+    description = 'helper program to test minepkg',
+    epilog      = 'the fuck is an epilog?'
+)
+# categorically -- -c try the latest patch. if that fails try the next latest
+parser.add_argument('-c', 
+                    '--categorically', 
+                    help='[-c|--categorically]: categorically visit the latest patch for each minor version. If that fails, try the next latest patch.',
+                    action='store_true'
+                    )
+# binary search -- -b go through all the versions, starting from the middle and proceeding higher if broken or lower if working. repeat
+parser.add_argument('-b',
+                    '--binary', 
+                    help='[-b|--binary]: start from the middle of the versions. If that version fails visit the later versions, else visit earlier versions. Repeat',
+                    action='store_true'
+                    )
+# threads       -- -t [# of threads] simultaneously test multiple versions of minecraft. blocks binary search.
+parser.add_argument('-t', 
+                    '--threads', 
+                    type=int, 
+                    help='[threads]: simultaneously test multiple versions of minecraft. blocks binary search.',
+                    )
+
+args = parser.parse_args()
 
 # global(s)
 # the version list needs to be known everywhere
@@ -14,10 +43,10 @@ bigversionlist = []
 
 # "constant(s)"
 # number of threads to use
-THREADCOUNT = 1
+THREADCOUNT = args.threads
 
 #Binary search mode control
-BSMODE = True
+BSMODE = args.binary
 
 def returnDate(version):
     return version['releaseTime']
