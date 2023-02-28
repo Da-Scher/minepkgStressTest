@@ -12,7 +12,7 @@ import testThread
 parser = argparse.ArgumentParser(
     prog        = 'mpkgStressTest',
     description = 'helper program to test minepkg',
-    epilog      = 'the fuck is an epilog?'
+    epilog      = 'Code and associated binary is licensed under MIT. You can find the sourcecode here: https://github.com/Da-Scher/minepkgStressTest'
 )
 # categorically -- -c try the latest patch. if that fails try the next latest
 parser.add_argument('-c', 
