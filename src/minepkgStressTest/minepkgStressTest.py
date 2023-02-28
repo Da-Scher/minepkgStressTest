@@ -43,7 +43,7 @@ bigversionlist = []
 
 # "constant(s)"
 # number of threads to use
-THREADCOUNT = args.threads
+THREADCOUNT = 0 if args.threads == None else args.threads
 
 #Binary search mode control
 BSMODE = args.binary
@@ -64,20 +64,15 @@ with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_man
     data = json.load(url)
     versions = json.JSONEncoder().encode(data['versions'])
     version_id = json.loads(versions)
-    if BSMODE:
-        for idx in range(0, len(version_id)):
-            #populate version list
-            bigversionlist.append(version_id[idx])
-        #sort by date
-        #the json may be sorted by date already, but to be safe 
-        bigversionlist.sort(key=returnDate)
-        #print(bigversionlist[0])
-        for idx in range (0, len(bigversionlist)):
-            versionlist.append([bigversionlist[idx]['id'], False])
-            
-    else:
-        for idx in range(0, len(version_id)):
-            versionlist[idx] = ([version_id[idx]['id'], False])
+    for idx in range(0, len(version_id)):
+        #populate version list
+        bigversionlist.append(version_id[idx])
+    #sort by date
+    #the json may be sorted by date already, but to be safe 
+    bigversionlist.sort(key=returnDate)
+    #print(bigversionlist[0])
+    for idx in range (0, len(bigversionlist)):
+        versionlist.append([bigversionlist[idx]['id'], False])
 
 # 2. populate output file with test.
 with open('output', 'w') as output_file:
