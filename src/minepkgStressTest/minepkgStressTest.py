@@ -11,7 +11,7 @@ import testThread
 # CL arguments
 parser = argparse.ArgumentParser(
     prog        = 'mpkgStressTest',
-    description = 'helper program to test minepkg',
+    description = 'helper program to test minepkg. program tests from oldest version to newest version.',
     epilog      = 'Code and associated binary is licensed under MIT. You can find the sourcecode here: https://github.com/Da-Scher/minepkgStressTest'
 )
 # categorically -- -c try the latest patch. if that fails try the next latest
@@ -32,6 +32,12 @@ parser.add_argument('-t',
                     type=int, 
                     help='[threads]: simultaneously test multiple versions of minecraft. blocks binary search.',
                     )
+# ignores       -- -i [snapshots,old_alpha,old_beta] ignore snapshots, old_alpha, and/or old_beta
+parser.add_argument('-i',
+                    '--ignore',
+                    type=str,
+                    nargs="+",
+                    help='[snapshot,old_alpha,old_beta,release]: ignores snapshots, old_alpha, old_beta, and/or release')
 
 args = parser.parse_args()
 
@@ -49,6 +55,9 @@ THREADCOUNT = 1 if args.threads == None else args.threads
 BSMODE = args.binary
 
 CATEGORY = args.categorical
+
+print(args.ignore)
+IGNORES = [] if args.ignore == None else args.ignore
 
 #if binary and categorical is selected, stop
 if BSMODE and CATEGORY:
@@ -72,11 +81,16 @@ with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_man
     versions = json.JSONEncoder().encode(data['versions'])
     version_id = json.loads(versions)
     for idx in range(0, len(version_id)):
-        #populate version list
-        bigversionlist.append(version_id[idx])
+        #if type is in ignore list, then skip
+        if version_id[idx]['type'] in IGNORES:
+            break
+        else:
+            #populate version list
+            bigversionlist.append(version_id[idx])
     #sort by date
-    #the json may be sorted by date already, but to be safe 
+    #the json may be sorted by date already, but to be safe
     bigversionlist.sort(key=returnDate)
+    print(bigversionlist[0]) 
     #print(bigversionlist[0])
     for idx in range (0, len(bigversionlist)):
         versionlist.append([bigversionlist[idx]['id'], False])
