@@ -14,8 +14,9 @@ class testThread(Thread):
         self.vers = version
         
     def run(self):
-        print(self.vers)
-        cmd = 'minepkg launch vanilla --minecraft=' + str(self.vers)
+        version = self.vers
+        print(version)
+        cmd = 'minepkg launch vanilla --minecraft=' + str(version)
         proc = subprocess.Popen(
                         cmd,
                         text=True,
@@ -28,7 +29,7 @@ class testThread(Thread):
         timer.start()
         shortcut = False
         for line in proc.stdout:
-            print(line)
+            #print(line)
             try:
                 if '[Render thread/INFO]: Created: 256x128x0 minecraft:textures/atlas/mob_effects.png-atlas' in line and not shortcut:
                     timer.cancel()

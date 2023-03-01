@@ -77,7 +77,7 @@ with urllib.request.urlopen("https://launchermeta.mojang.com/mc/game/version_man
 # 2. populate output file with test.
 with open('output', 'w') as output_file:
     process = False
-    idx = 0
+    index = 0
     if BSMODE:
         running = True
         x2      = len(versionlist) - 1
@@ -125,33 +125,30 @@ with open('output', 'w') as output_file:
                 
 
     else:   
-        while idx < len(versionlist):
-                exit
-                threads = []
-                # fixing mojang versioning to match with minepkg stanards
-                for thread in range(0, THREADCOUNT):
-                    version = versionlist[idx]
-                    #  if re.match('^\d+.\d+(?:-[A-Za-z0-9-]*)?$', version):
-                    #         if re.match('^\d+.\d+[-]', version):
-                    #             version = re.sub('[-]', '.0-', version)
-                    #         elif re.match('^\d+.\d+$', version):
-                    #             version = re.sub('$', '.0', version)
-                    idx += 1
-                    # now that we have an appropriate version we can construct a minepkg command
-                    threads.append(testThread.testThread(version))
-                    threads[thread].start()
-                for thread in threads:
-                    print(thread.is_alive())
-                    if not thread.is_alive():
-                        version = versionlist[idx]
-                        if re.match('^\d+.\d+(?:-[A-Za-z0-9-]*)?$', version):
-                            if re.match('^\d+.\d+[-]', version):
-                                version = re.sub('[-]', '.0-', version)
-                            elif re.match('^\d+.\d+$', version):
-                                version = re.sub('$', '.0', version)
-                        idx += 1
-                        threads[thread] = testThread.testThread(version)
-                        threads[thread].start()
-                for thread in threads:
-                    thread.join()
-                    output_file.write(thread.state)
+        while index < len(versionlist):
+            #smart list format: semver, thread, index
+            smartlist = []
+            # fixing mojang versioning to match with minepkg stanards
+            for thread in range(0, THREADCOUNT):
+                version = versionlist[index][0]
+                #  if re.match('^\d+.\d+(?:-[A-Za-z0-9-]*)?$', version):
+                #         if re.match('^\d+.\d+[-]', version):
+                #             version = re.sub('[-]', '.0-', version)
+                #         elif re.match('^\d+.\d+$', version):
+                #             version = re.sub('$', '.0', version)
+                # now that we have an appropriate version we can construct a minepkg command
+                smartlist.append([version, testThread.testThread(version), index])
+                #print(smartlist)
+                smartlist[thread][1].start()
+                print(versionlist[index][0])
+                print(f'task {thread}::version {smartlist[thread][0]} == {smartlist[thread][1].is_alive()}')
+                index += 1
+            for thread in smartlist:
+                thread[1].join()
+                versionlist[thread[2]][1] = thread[1].state
+                print(versionlist[thread[2]][1])
+        for idx in range(0, len(versionlist)):
+            if versionlist[idx][1]:
+                output_file.write(f"{versionlist[idx][0]} PASS\n")
+            else:
+                output_file.write(f"{versionlist[idx][0]} FAIL\n")
