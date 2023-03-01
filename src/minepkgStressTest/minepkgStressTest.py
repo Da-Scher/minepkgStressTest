@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(
 )
 # categorically -- -c try the latest patch. if that fails try the next latest
 parser.add_argument('-c', 
-                    '--categorically', 
+                    '--categorical', 
                     help='[-c|--categorically]: categorically visit the latest patch for each minor version. If that fails, try the next latest patch.',
                     action='store_true'
                     )
@@ -43,10 +43,17 @@ bigversionlist = []
 
 # "constant(s)"
 # number of threads to use
-THREADCOUNT = 0 if args.threads == None else args.threads
+THREADCOUNT = 1 if args.threads == None else args.threads
 
 #Binary search mode control
 BSMODE = args.binary
+
+CATEGORY = args.categorical
+
+#if binary and categorical is selected, stop
+if BSMODE and CATEGORY:
+    print("Binary search mode and categorical mode cannot be enabled at the same time.\nPlease select only one or the other.")
+    exit(-1)
 
 def returnDate(version):
     return version['releaseTime']
@@ -120,10 +127,9 @@ with open('output', 'w') as output_file:
                 output_file.write(f"{versionlist[idx][0]} PASS\n")
             else:
                 output_file.write(f"{versionlist[idx][0]} FAIL\n")
-                
-                
-                
-
+    elif CATEGORY:
+        
+        pass
     else:   
         while index < len(versionlist):
             #smart list format: semver, thread, index
